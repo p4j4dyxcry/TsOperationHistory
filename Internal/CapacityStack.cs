@@ -2,17 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OperationSystem
+namespace TsOperationHistory.Internal
 {
-    public class CapacityStack<T> : IEnumerable<T>
+    internal interface IStack<T> : IEnumerable<T>
+    {
+        T Push(T item);
+        T Peek();
+        T Pop();
+        void Clear();
+    }
+
+    internal class CapacityStack<T> : IStack<T>
     {
         private readonly LinkedList<T> _collection = new LinkedList<T>();
 
         public CapacityStack(int capacity) { Capacity = capacity; }
 
         public int Capacity { get; }
-
-        public int Count => _collection.Count;
 
         public T Push(T item)
         {
