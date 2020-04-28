@@ -56,10 +56,9 @@ namespace TsOperationHistory.Extensions
 
         public static void ExecuteSetProperty<T,TProperty>(this IOperationController controller, T owner , string propertyName , TProperty value)
         {
-            var operation = owner.GenerateSetPropertyOperation(propertyName, value);
-
-            if (operation is IMergeableOperation mergeableOperation)
-                operation = mergeableOperation.Merge(controller);
+            var operation = owner
+                .GenerateSetPropertyOperation(propertyName, value)
+                .Merge(controller);
             
             controller.Execute(operation);
         }
@@ -74,11 +73,9 @@ namespace TsOperationHistory.Extensions
             {
                 if (args.PropertyName == propertyName)
                 {
-                    var value = FastReflection.GetProperty<T>(sender, propertyName);
-                    var operation = owner.GenerateSetPropertyOperation(propertyName, value);
-
-                    if (operation is IMergeableOperation mergeableOperation)
-                        operation = mergeableOperation.Merge(controller);
+                    var operation = owner
+                        .ToOperation<T>(propertyName)
+                        .Merge(controller);
                     
                     controller.Push(operation);
                 }

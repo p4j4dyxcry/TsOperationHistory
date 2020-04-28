@@ -6,7 +6,7 @@ namespace TsOperationHistory
     public interface IMergeableOperation : IOperation
     {
         IMergeJudge MergeJudge { get; }
-        IOperation Merge(IOperationController operationController);
+        IMergeableOperation Merge(IOperationController operationController);
     }
 
     internal interface IOperationWithEvent : IOperation
@@ -85,7 +85,7 @@ namespace TsOperationHistory
         /// 統合されたOperationはUndoStackから除外されます。
         /// Operationが統合された場合OperationManagerのRedoStackはクリアされます。
         /// </summary>
-        public IOperation Merge(IOperationController operationController)
+        public IMergeableOperation Merge(IOperationController operationController)
         {
             if (operationController.CanUndo is false)
                 return this;
@@ -174,7 +174,7 @@ namespace TsOperationHistory
         /// 統合されたOperationはUndoStackから除外されます。
         /// Operationが統合された場合OperationManagerのRedoStackはクリアされます。
         /// </summary>
-        public IOperation Merge(IOperationController operationController)
+        public IMergeableOperation Merge(IOperationController operationController)
         {
             if (operationController.CanUndo is false)
                 return this;

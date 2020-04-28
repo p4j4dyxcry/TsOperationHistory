@@ -79,29 +79,40 @@ namespace TsOperationHistory.Extensions
         /// <summary>
         /// プロパティ名からプロパティ設定オペレーションを作成する
         /// </summary>
-        public static IOperation GenerateSetPropertyOperation<T, TProperty>(this T @this, string propertyName, TProperty newValue, TimeSpan timeSpan)
+        public static IMergeableOperation GenerateSetPropertyOperation<TProperty>(this object @this, string propertyName, TProperty newValue, TimeSpan timeSpan)
         {
             var oldValue = (TProperty)FastReflection.GetProperty(@this, propertyName);
 
             return GenerateAutoMergeOperation(@this, propertyName, newValue, oldValue, $"{@this.GetHashCode()}.{propertyName}", timeSpan);
         }
 
-        public static IOperation GenerateSetPropertyOperation<T, TProperty>(this T @this, string propertyName, TProperty newValue)
+        public static IMergeableOperation GenerateSetPropertyOperation<TProperty>(this object @this, string propertyName, TProperty newValue)
         {
             return GenerateSetPropertyOperation(@this, propertyName, newValue, Operation.DefaultMergeSpan);
         }
 
-        public static IOperation GenerateSetPropertyOperation<T, TProperty>(this T @this, Expression<Func<T, TProperty>> selector, TProperty newValue)
+        public static IMergeableOperation GenerateSetPropertyOperation<T, TProperty>(this T @this, Expression<Func<T, TProperty>> selector, TProperty newValue)
         {
             var propertyName = selector.GetMemberName();
-            
             return GenerateSetPropertyOperation(@this, propertyName, newValue , Operation.DefaultMergeSpan);
+        }
+        
+        public static IMergeableOperation ToOperation<T, TProperty>(this T @this, Expression<Func<T, TProperty>> selector)
+        {
+            var propertyName = selector.GetMemberName();
+            return ToOperation<TProperty>(@this , propertyName);
+        }
+        
+        public static IMergeableOperation ToOperation<TProperty>(this object @this, string propertyName)
+        {
+            var currentValue = FastReflection.GetProperty<TProperty>(@this, propertyName);
+            return GenerateSetPropertyOperation(@this, propertyName, currentValue , Operation.DefaultMergeSpan);
         }
 
         /// <summary>
         /// マージ可能なオペレーションを作成する
         /// </summary>
-        public static IOperation GenerateAutoMergeOperation<T, TProperty,TMergeKey>(this T @this,string propertyName, TProperty newValue ,TProperty oldValue, TMergeKey mergeKey,TimeSpan timeSpan)
+        public static IMergeableOperation GenerateAutoMergeOperation<TProperty,TMergeKey>(this object @this,string propertyName, TProperty newValue ,TProperty oldValue, TMergeKey mergeKey,TimeSpan timeSpan)
         {
             return new MergeableOperation<TProperty>(
                 x => { FastReflection.SetProperty(@this, propertyName, x); },
