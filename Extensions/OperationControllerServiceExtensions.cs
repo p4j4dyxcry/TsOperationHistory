@@ -1,5 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using TsOperationHistory.Internal;
 
 namespace TsOperationHistory.Extensions
 {
@@ -53,7 +57,32 @@ namespace TsOperationHistory.Extensions
         public static void ExecuteSetProperty<T,TProperty>(this IOperationController controller, T owner , string propertyName , TProperty value)
         {
             var operation = owner.GenerateSetPropertyOperation(propertyName, value);
+
+            if (operation is IMergeableOperation mergeableOperation)
+                operation = mergeableOperation.Merge(controller);
+            
             controller.Execute(operation);
+        }
+
+        public static IDisposable BindPropertyChanged<T>(this IOperationController controller , INotifyPropertyChanged owner, string propertyName)
+        {
+            owner.PropertyChanged += PropertyChanged;
+            
+            return new Disposer(() => owner.PropertyChanged -= PropertyChanged);
+
+            void PropertyChanged(object sender, PropertyChangedEventArgs args)
+            {
+                if (args.PropertyName == propertyName)
+                {
+                    var value = FastReflection.GetProperty<T>(sender, propertyName);
+                    var operation = owner.GenerateSetPropertyOperation(propertyName, value);
+
+                    if (operation is IMergeableOperation mergeableOperation)
+                        operation = mergeableOperation.Merge(controller);
+                    
+                    controller.Push(operation);
+                }
+            }
         }
     }
 }
