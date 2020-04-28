@@ -100,11 +100,6 @@ namespace TsOperationHistory.Extensions
         public static IMergeableOperation ToOperation<T, TProperty>(this T @this, Expression<Func<T, TProperty>> selector)
         {
             var propertyName = selector.GetMemberName();
-            return ToOperation<TProperty>(@this , propertyName);
-        }
-        
-        public static IMergeableOperation ToOperation<TProperty>(this object @this, string propertyName)
-        {
             var currentValue = FastReflection.GetProperty<TProperty>(@this, propertyName);
             return GenerateSetPropertyOperation(@this, propertyName, currentValue , Operation.DefaultMergeSpan);
         }

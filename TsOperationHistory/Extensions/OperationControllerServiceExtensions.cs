@@ -33,7 +33,7 @@ namespace TsOperationHistory.Extensions
             controller.Execute(operation);
         }
         
-        public static void ExecuteRemove<T>(this IOperationController controller, IList<T> list, int index)
+        public static void ExecuteRemoveAt<T>(this IOperationController controller, IList<T> list, int index)
         {
             if (list is IList iList)
             {
@@ -63,21 +63,40 @@ namespace TsOperationHistory.Extensions
             controller.Execute(operation);
         }
 
-        public static IDisposable BindPropertyChanged<T>(this IOperationController controller , INotifyPropertyChanged owner, string propertyName)
+        public static IDisposable BindPropertyChanged<T>(this IOperationController controller , INotifyPropertyChanged owner, string propertyName , bool autoMerge = true)
         {
+            var prevValue = FastReflection.GetProperty<T>(owner, propertyName);
+            var callFromOperation = false;
             owner.PropertyChanged += PropertyChanged;
-            
+
             return new Disposer(() => owner.PropertyChanged -= PropertyChanged);
 
+            // local function
             void PropertyChanged(object sender, PropertyChangedEventArgs args)
             {
+                if (callFromOperation)
+                    return;
+                
                 if (args.PropertyName == propertyName)
                 {
+                    callFromOperation = true;
+                    T newValue = FastReflection.GetProperty<T>(owner, propertyName);
                     var operation = owner
-                        .ToOperation<T>(propertyName)
-                        .Merge(controller);
+                        .GenerateAutoMergeOperation(propertyName,newValue,prevValue,$"{sender.GetHashCode()}.{propertyName}",Operation.DefaultMergeSpan);
+
+                    if (autoMerge)
+                    {
+                        operation = operation.Merge(controller);
+                    }
+
+                    operation
+                        .AddPreEvent(() => callFromOperation = true)
+                        .AddPostEvent(() => callFromOperation = false);
+                    
+                    prevValue = newValue;
                     
                     controller.Push(operation);
+                    callFromOperation = false;
                 }
             }
         }

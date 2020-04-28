@@ -15,6 +15,12 @@ namespace TsOperationHistory
         public bool CanUndo => _undoStack.CanUndo;
         public bool CanRedo => _undoStack.CanRedo;
 
+        public OperationController()
+            : this(1024)
+        {
+            
+        }
+        
         public OperationController(int capacity)
         {
             Debug.Assert(capacity > 0 , ErrorMessages.InvalidOperation);

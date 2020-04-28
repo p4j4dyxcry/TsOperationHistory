@@ -7,7 +7,7 @@
         <Copyright>p4j4dyxcyr</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <PackageVersion>1.0.2</PackageVersion>
-        <AssemblyVersion>1.0.2</AssemblyVersion>
+        <PackageVersion>1.0.3</PackageVersion>
+        <AssemblyVersion>1.0.3</AssemblyVersion>
     </PropertyGroup>
 </Project>
